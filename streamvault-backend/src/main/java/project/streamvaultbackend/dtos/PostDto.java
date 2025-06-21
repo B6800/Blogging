@@ -1,4 +1,4 @@
 package project.streamvaultbackend.dtos;
 
-public class PostDto {
+public record PostDto(long id,String username,String avatar,String text,long timestamp,int likeCount,boolean likedByCurrentUser) {
 }
