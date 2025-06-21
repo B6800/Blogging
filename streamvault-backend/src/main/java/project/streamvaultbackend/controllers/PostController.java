@@ -1,42 +1,48 @@
 package project.streamvaultbackend.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.transaction.Transactional;
 import org.springframework.web.bind.annotation.*;
 import project.streamvaultbackend.dtos.PostDto;
 import project.streamvaultbackend.entities.User;
 import project.streamvaultbackend.services.PostService;
+import project.streamvaultbackend.services.UserService;
+
 
 import java.util.List;
-
+@CrossOrigin(origins = "*")
+@Transactional
 @RestController
-@RequestMapping("/api/posts")
 public class PostController {
-    @Autowired
-    PostService postService;
+    private final PostService postService;
+    private final UserService userService;
 
-    private User getCurrentUser() {
-
-        return authService.userRepository.findAll().get(0);
+    public PostController(PostService postService, UserService userService) {
+        this.postService = postService;
+        this.userService = userService;
+    }
+    public record CreatePostRequest(String username, String text) {}
+    @PostMapping("/api/posts")
+    public PostDto createPost(@RequestBody CreatePostRequest req) {//commit
+        User user = userService.findByUsername(req.username());
+        return postService.toDto(postService.createPost(user, req.text()), user);
     }
 
-    @PostMapping
-    public PostDto createPost(@RequestBody String text) {
-        return postService.toDto(postService.createPost(getCurrentUser(), text), getCurrentUser());
+    @GetMapping("/api/posts/timeline")//commit
+    public List<PostDto> timeline(@RequestParam(defaultValue = "20") int limit, @RequestParam String username ) {
+        User user = userService.findByUsername(username);
+        return postService.getTimeline(user, limit);
     }
 
-    @GetMapping("/timeline")
-    public List<PostDto> timeline(@RequestParam(defaultValue = "20") int limit) {
-        return postService.getTimeline(getCurrentUser(), limit);
+    @GetMapping("/api/posts/user/{userId}/posts")//commit
+    public List<PostDto> userPosts(@RequestParam String username, @RequestParam(defaultValue = "20") int limit,@PathVariable Long userId) {
+        User viewer = userService.findByUsername(username);
+        return postService.getUserPosts(userId, limit, viewer);
     }
+    public record LikePostRequest(String username) {}//commit
+    @PostMapping("/api/posts/{postId}/like")
+    public void likePost(@PathVariable Long postId,@RequestBody LikePostRequest req) {
+        User user = userService.findByUsername(req.username());
+        postService.likePost(user, postId);
 
-    @GetMapping("/user/{userId}")
-    public List<PostDto> userPosts(@PathVariable Long userId, @RequestParam(defaultValue = "20") int limit) {
-        return postService.getUserPosts(userId, limit, getCurrentUser());
-    }
-
-    @PostMapping("/{postId}/like")
-    public void likePost(@PathVariable Long postId) {
-        postService.likePost(getCurrentUser(), postId);
     }
 }
-//Add getters and setters
