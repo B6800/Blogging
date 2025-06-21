@@ -1,18 +1,22 @@
 package project.streamvaultbackend.entities;
 
 import jakarta.persistence.*;
+
+//commit this changes
 import java.util.*;
 
 @Entity
-
-public class User {
+@Table(name = "users")
+public class User  {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
     private String username;
+
     @Column(nullable = false)
     private String password;
+
     private String avatar;
 
     @ManyToMany
@@ -25,7 +29,45 @@ public class User {
 
     @ManyToMany(mappedBy = "followers")
     private Set<User> following = new HashSet<>();
+    public Long getId() {
 
+        return id;
+    }
+    public String getUsername() {
+//Commit this change
+        return username;
+    }
+    public void setUsername(String username) {
 
+        this.username = username;
+    }
+
+    public String getPassword() {
+
+        return password;
+    }
+    public void setPassword(String password) {
+
+        this.password = password;
+    }
+
+    public String getAvatar() {
+
+        return avatar;
+    }
+    public void setAvatar(String avatar) {
+
+        this.avatar = avatar;
+    }
+
+    public Set<User> getFollowers() {
+
+        return followers;
+    }
+
+    public Set<User> getFollowing() {
+
+        return following;
+    }
 }
-//Add getters and setters
+//long id,String username,String avatar,boolean followedByCurrentUser
