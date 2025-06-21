@@ -1,18 +1,32 @@
 package project.streamvaultbackend.services;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import project.streamvaultbackend.entities.User;
+import project.streamvaultbackend.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Optional;
+
+
 
 @Service
 public class AuthService {
-    @Autowired
-    public UserRepository userRepository;
-    @Autowired PasswordEncoder passwordEncoder;
+
+    public final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+@Autowired
+    public AuthService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
 
     public User register(String username, String password) {
+        if (userRepository.findByUsername(username).isPresent())
+            throw new RuntimeException("Username already exists");
+        if (password == null || password.isBlank())
+            throw new IllegalArgumentException("Password cannot be null or empty");
         if (userRepository.findByUsername(username).isPresent())
             throw new RuntimeException("Username already exists");
         User user = new User();
@@ -24,8 +38,11 @@ public class AuthService {
 
     public User login(String username, String password) {
         Optional<User> userOpt = userRepository.findByUsername(username);
-        if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPassword()))
-            throw new RuntimeException("Invalid credentials");
+        if (userOpt.isEmpty())
+            throw new RuntimeException("User not found");
+        if ( !passwordEncoder.matches(password, userOpt.get().getPassword()))
+            throw new RuntimeException("Wrong password");
         return userOpt.get();
     }
+
 }
