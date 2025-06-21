@@ -1,8 +1,6 @@
 package project.streamvaultbackend.dtos;
 
-public class AuthRequest {
-    public String username() {
-    }
+public record AuthRequest(String username,String password) {
 
     public String password() {
         return null;
