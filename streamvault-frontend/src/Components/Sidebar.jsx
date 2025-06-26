@@ -1,5 +1,6 @@
-import React, { useContext } from "react";
-import { AppContext } from "../App";
+import React, { useContext,useState,useEffect } from "react";
+import  AppContext  from "../AppContext.js";
+import { getFollowers } from "../api.js";
 
 /**
  * Sidebar component displays user profile info and navigation links.
@@ -9,24 +10,44 @@ import { AppContext } from "../App";
 export default function Sidebar() {
     // Get needed values and functions from context
     const {
-        currentUserId,   // ID of the logged-in user
-        users,           // Array of all users
+        user,   // ID of the logged-in user
         setFeedType,     // Setter to change the feed view
         setSelectedUserId, // Setter to select which user's posts to view
-        handleLogout     // Function to log the user out
+        handleLogout, // Function to log the user out
+        followersVersion,
     } = useContext(AppContext);
-
-    // Get the current user's data
-    const user = users.find(u => u.id === currentUserId);
+    const[followers,setFollowers]=useState([]);
+    const [loadingFollowers, setLoadingFollowers] = useState(false);
+    // Fetch followers on mount or when user changes
+    useEffect(() => {
+        setFollowers([]);
+        if (user?.id) {
+            setLoadingFollowers(true);
+            getFollowers(user.id)
+                .then(setFollowers)
+                .catch(() => setFollowers([]))
+                .finally(() => setLoadingFollowers(false));
+        }
+    },[user,followersVersion]);
+    if ( !user) {
+        // Show a loading spinner or nothing while users or currentUserId is not set
+        return null;
+    }//Do commit here
 
     return (
         <nav className="sidebar">
             {/* User profile section with avatar, name, and username */}
             <div className="profile">
-                <img className="avatar" src={user.avatar} alt={user.username} />
+                <img className="avatar small" src={user.avatar} alt={user.username} />
                 <div>
                     <strong>{user.name}</strong>
                     <span className="username">@{user.username}</span>
+                    <br/>
+                    <span style={{ fontSize: 13, color: "#888" }}>
+                        {loadingFollowers
+                            ? "Loading followers…"
+                            : `${followers.length} follower${followers.length === 1 ? "" : "s"}`}
+                    </span>
                 </div>
             </div>
             {/* Navigation links for Home, Profile, and New Post */}
