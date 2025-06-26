@@ -1,33 +1,37 @@
 
 import React, { useState, useContext } from "react";
-import { AppContext } from "../App";
+import AppContext  from "../AppContext.js";
+import { createPost } from "../api.js";
 /*
  * NewPostBox component allows the current user to create a new post.
  * The post is added to the list of posts in context state.
  */
 export default function NewPostBox() {
-    const { currentUserId, posts, setPosts, feedType, setFeedType } = useContext(AppContext);
+
+    const { user, posts, setPosts, setFeedType} = useContext(AppContext);//commit
     const [text, setText] = useState("");
+    const[loading,setLoading]= useState(false)
+    // Defensive checks!
+    if (!user){
+        // Render nothing or a loading message until user is available
+        return null;
+    }//commit
 
-    function handleSubmit(e) {
+
+    async function handleSubmit(e) {//commit change
         e.preventDefault();
-        if (!text.trim()) return;
-        setPosts([
-            {
-                id: Date.now(),            // Unique post ID (using timestamp)
-                userId: currentUserId,     // Author of the post
-                text: text.trim(),         // Content of the post
-                timestamp: Date.now(),     // Creation time
-                likes: [],                 // Array to track user IDs who liked the post
-            },
-            ...posts,
-        ]);
-        setText("");
-        setFeedType("myposts"); // Show your post
+        setLoading(true);
+        try {
+            const newPost = await createPost(user.username, text);
+            setPosts([newPost, ...posts]);
+            setText("");
+            setFeedType("myposts");
+        } catch (err) {
+            alert("Failed to create post: " + err.message);
+        } finally {
+            setLoading(false);
+        }
     }
-
-    // Show only in timeline/newpost view
-    if (feedType === "user") return null;
 
     return (
         <form className="new-post-box" onSubmit={handleSubmit}>
@@ -38,7 +42,7 @@ export default function NewPostBox() {
           required
           maxLength={280}
       />
-            <button type="submit">Post</button>
+            <button type="submit" disabled={loading}>Post</button>
         </form>
     );
 }
