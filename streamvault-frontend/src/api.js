@@ -77,6 +77,23 @@ export async function likePost(username, postId) {
     if (!response.ok) throw new Error("Failed to like post");
 }
 
+// Unlike a Post (auth required)
+export async function unlikePost(username, postId) {
+    const response = await fetch(`${BASE}/posts/${postId}/unlike`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username})
+    });
+    if (!response.ok) throw new Error("Failed to unlike post");
+}
+// Delete a Post (auth required)
+export async function deletePost(username, postId) {
+    const response = await fetch(`${BASE}/posts/${postId}?username=${encodeURIComponent(username)}`, {
+        method: "DELETE"
+    });
+    if (!response.ok) throw new Error("Failed to delete post");
+}
+
 // Get User's Posts (auth required)
 export async function getUserPosts(username, password, userId,limit=20) {
     const response = await fetch(`${BASE}/posts/user/${userId}/posts?username=${encodeURIComponent(username)}&limit=${limit}`);
