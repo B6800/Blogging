@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import React, { useContext,useState } from "react";
 import  AppContext  from "../AppContext.js";
-import { likePost } from "../api.js";
+import { likePost,unlikePost,deletePost } from "../api.js";
 
 function timeAgo(ts) {
     const diff = Date.now() - ts;
@@ -13,6 +13,7 @@ function timeAgo(ts) {
 
 export default function PostCard({ post }) {
     const {  user, posts, setPosts } = useContext(AppContext);
+    const [notification, setNotification] = useState("");
     const likedByUser= post.likedByCurrentUser;
     // Defensive checks!
     if (!user) {
@@ -29,6 +30,27 @@ export default function PostCard({ post }) {
             setPosts(posts.map(p=>p.id===post.id?{...p,likeCount: p.likeCount +1,likedByCurrentUser:true}:p));
         }catch (e){
             alert("Failed to like post:"+ e.message);
+        }
+    }
+    async function handleUnlike() {
+        if (!post.likedByCurrentUser) return;
+        try {
+            await unlikePost(user.username, post.id);
+            setPosts(posts.map(p => p.id === post.id ? { ...p, likeCount: p.likeCount - 1, likedByCurrentUser: false } : p));
+        } catch (e) {
+            alert("Failed to unlike post:" + e.message);
+        }
+    }
+    async function handleDelete() {
+
+        try {
+            await deletePost(user.username, post.id);
+            setPosts(posts.filter(p => p.id !== post.id));
+            setNotification("Post deleted!");
+            setTimeout(() => setNotification(""), 2000); // hide after 2s
+        } catch (e) {
+            setNotification("Delete failed: " + e.message);
+            setTimeout(() => setNotification(""), 2000);
         }
     }
     return (
@@ -59,7 +81,23 @@ export default function PostCard({ post }) {
                         ❤️
                     </button>
                 )}
-                {/* Optionally show a disabled heart if already liked */}
+                {post.username !== user.username && post.likedByCurrentUser && (
+                    <button className="like-btn" onClick={handleUnlike} title="Unlike this post">
+                        💔
+                    </button>
+                )}
+                {/* Delete button for your own post */}
+                {post.ownedByCurrentUser && (
+                    <button
+                        className="delete-btn"
+                        onClick={handleDelete}
+                    >
+                        🗑️
+                    </button>
+                )}
+                {notification && (
+                    <div className="notification">{notification}</div>
+                )}
                 {post.username !== user.username && likedByUser && (
                     <span style={{marginLeft: 8, color: "#ffb6ba"}}>❤️</span>
                 )}
