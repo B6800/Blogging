@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
-import { AppContext } from "../App";
+import  AppContext  from "../AppContext.js";
+import { likePost } from "../api.js";
 
 function timeAgo(ts) {
     const diff = Date.now() - ts;
@@ -11,46 +12,55 @@ function timeAgo(ts) {
 }
 
 export default function PostCard({ post }) {
-    const { currentUserId, users, posts, setPosts } = useContext(AppContext);
+    const {  user, posts, setPosts } = useContext(AppContext);
+    const likedByUser= post.likedByCurrentUser;
+    // Defensive checks!
+    if (!user) {
+        // Render nothing or a loading message until users/currentUserId is available
+        return null;
+    }//Commit
 
-    const user = users.find(u => u.id === post.userId);
-    const likedByUser = post.likes.includes(currentUserId);
 
-    function handleLike() {
+    async function handleLike() {
         // Can't like own post or like again
-        if (post.userId === currentUserId || likedByUser) return;
-        setPosts(posts.map(p =>
-            p.id === post.id
-                ? { ...p, likes: [...p.likes, currentUserId] }
-                : p
-        ));
+        if (post.username=== user.username || likedByUser) return;
+        try {
+            await likePost(user.username,post.id);
+            setPosts(posts.map(p=>p.id===post.id?{...p,likeCount: p.likeCount +1,likedByCurrentUser:true}:p));
+        }catch (e){
+            alert("Failed to like post:"+ e.message);
+        }
     }
     return (
         <article className="post-card">
             <div className="post-header">
-                <img className="avatar small" src={user.avatar} alt={user.username} />
-                <span className="post-username">{user.username}</span>
+                <img
+                    className="avatar small"
+                    src={post.avatar || "https://api.dicebear.com/7.x/thumbs/svg?seed=placeholder"}
+                    alt={post.username || "user"}
+                />
+                <span className="post-username">{post.username}</span>
                 <span className="post-time">{timeAgo(post.timestamp)}</span>
             </div>
             <div className="post-content">{post.text}</div>
             <div className="post-footer">
         <span className="likes">
           {
-              post.likes.length
+              post.likeCount
           }
           {
-              post.likes.length === 1 ? "Like" : "Likes"
+              post.likeCount === 1 ? "Like" : "Likes"
           }
         </span>
                 {/* Like button logic */}
                 {
-                    post.userId !== currentUserId && !likedByUser && (
+                    post.username !== user.username && !likedByUser && (
                     <button className="like-btn" onClick={handleLike} title="Like this post">
                         ❤️
                     </button>
                 )}
                 {/* Optionally show a disabled heart if already liked */}
-                {post.userId !== currentUserId && likedByUser && (
+                {post.username !== user.username && likedByUser && (
                     <span style={{marginLeft: 8, color: "#ffb6ba"}}>❤️</span>
                 )}
             </div>
