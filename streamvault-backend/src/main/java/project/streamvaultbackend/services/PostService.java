@@ -60,7 +60,21 @@ public class PostService {
         postRepository.save(post);
 
     }
-
+    public void unlikePost(User user, Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow();
+        if (!post.getLikes().contains(user)) {
+            throw new RuntimeException("Post not liked yet");
+        }
+        post.getLikes().remove(user);
+        postRepository.save(post);
+    }
+    public void deletePost(User user, Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow();
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Can only delete your own post");
+        }
+        postRepository.delete(post);
+    }
     public PostDto toDto(Post p, User viewer) {
         return new PostDto(
                 p.getId(),
@@ -69,7 +83,8 @@ public class PostService {
                 p.getText(),
                 p.getTimestamp(),
                 p.getLikes().size(),
-                p.getLikes().contains(viewer)
+                p.getLikes().contains(viewer),
+                p.getUser().getId().equals(viewer.getId())
         );
     }
 }
