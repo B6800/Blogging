@@ -1,27 +1,41 @@
 import React, { useState, useContext } from "react";
-import { AppContext } from "../App";
+import  AppContext from "../AppContext.js";
+import { searchUsers } from "../api.js";
 import UserListItem from "./UserListItem";
 
 export default function UserSearch() {
-    const { users, currentUserId } = useContext(AppContext);
-    const [q, setQ] = useState("");
-    const searchRes = q.trim()
-        ? users.filter(
-            u => u.username.toLowerCase().includes(q.toLowerCase()) && u.id !== currentUserId
-        )
-        : [];
-
-    return (
-        <div className="user-search">
+    const { user,users,setUsers } = useContext(AppContext);
+    const [query, setQ] = useState("");
+    const[loading,setLoading]=useState(false);
+    // Defensive checks!
+    if (!user  ) {
+        // Render nothing or a loading message until users/currentUserId is available
+        return null;
+    }//commit
+    async function handleSearch(e) {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const res = await searchUsers(user.username, query);
+            setUsers(res);
+        } catch  {
+            setUsers([]);
+        } finally {
+            setLoading(false);
+        }
+    }
+    return (//commit changed this to form
+        <form onSubmit={handleSearch}>
             <input
                 type="search"
-                placeholder="Search users…"
-                value={q}
+                value={query}
                 onChange={e => setQ(e.target.value)}
+                placeholder="Search users…"
             />
+            <button type="submit" disabled={loading}>Search</button>
             <div className="user-search-results">
-                {searchRes.map(u => <UserListItem key={u.id} user={u} />)}
+                {users.map(u => <UserListItem key={u.id} user={u}  />)}
             </div>
-        </div>
+        </form>
     );
 }
