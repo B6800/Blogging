@@ -45,4 +45,15 @@ public class PostController {
         postService.likePost(user, postId);
 
     }
+    @PostMapping("/api/posts/{postId}/unlike")
+    public void unlikePost(@PathVariable Long postId, @RequestBody LikePostRequest req) {
+        User user = userService.findByUsername(req.username());
+        postService.unlikePost(user, postId);
+    }
+    @DeleteMapping("/api/posts/{postId}")
+    public void deletePost(@PathVariable Long postId, @RequestParam String username) {
+        User user = userService.findByUsername(username);
+        postService.deletePost(user, postId);
+    }
+
 }
