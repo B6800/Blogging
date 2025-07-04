@@ -1,11 +1,15 @@
-FROM node:18
-WORKDIR /app
-ARG API_URL=http://localhost:8080/
-ENV VITE_API_URL=$API_URL
-COPY package.json .
+FROM node:23-alpine AS build
+ARG STREAMVAULT_API
+ENV STREAMVAULT_API=$STREAMVAULT_API
+WORKDIR /usr/src/app
+COPY package*.json ./
 RUN npm install
-COPY . .
+COPY ./ ./
+RUN echo "" > .env
+RUN echo VITE_APP_STREAMVAULT_API="${STREAMVAULT_API}" >> .env
 RUN npm run build
-FROM nginx:alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
+
+FROM nginx:stable-alpine
+COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
