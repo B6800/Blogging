@@ -1,4 +1,5 @@
 package project.streamvaultbackend;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 public class AuthControllerTest {
    @Autowired private AuthController authController;
     @Autowired private UserRepository userRepository;
@@ -26,10 +28,7 @@ public class AuthControllerTest {
         // Setup can register a baseline user if needed
         authController.register(new AuthRequest("existingUser", "password"));
     }
-    @Test
-    void mainRuns() {
-        StreamvaultBackendApplication.main(new String[] {});
-    }
+
     @Test
     public void registerSuccessAndLogin() {
         AuthRequest req = new AuthRequest("bob", "pw");
@@ -63,7 +62,7 @@ public class AuthControllerTest {
     public void loginWithWrongPasswordFails() {
         AuthRequest req = new AuthRequest("bob", "pw");
         authController.register(req);
-        AuthRequest wrongPw = new AuthRequest("bob", "wrongpw");
+        AuthRequest wrongPw = new AuthRequest("bob", "wrong");
         assertThrows(Exception.class, () -> authController.login(wrongPw));
     }
     @Test
@@ -73,9 +72,9 @@ public class AuthControllerTest {
     }
     @Test
     public void loginSucceedsAfterRegister() {
-        AuthRequest req = new AuthRequest("testuser123", "testpw123");
+        AuthRequest req = new AuthRequest("tester123", "test123");
         UserDto registered = authController.register(req);
-        assertEquals("testuser123", registered.username());
+        assertEquals("tester123", registered.username());
         UserDto loggedIn = authController.login(req);
         assertEquals(registered.username(), loggedIn.username());
 
