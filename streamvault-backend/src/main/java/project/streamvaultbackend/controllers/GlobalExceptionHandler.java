@@ -9,6 +9,10 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException ex) {
+        // Log to console
+        System.err.println("RuntimeException: " + ex.getMessage());
+        //noinspection CallToPrintStackTrace
+        ex.printStackTrace();
         String msg = ex.getMessage();
         HttpStatus status = HttpStatus.BAD_REQUEST; // Default
 
@@ -31,8 +35,12 @@ public class GlobalExceptionHandler {
     }
 
     // Optional: handle all other exceptions
+    @SuppressWarnings("CallToPrintStackTrace")
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleOther(Exception ignoredEx) {
+    public ResponseEntity<Map<String, String>> handleOther(Exception ex) {
+        // Log to console
+        System.err.println("Exception: " + ex.getMessage());
+        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Internal server error"));
     }
