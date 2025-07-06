@@ -1,6 +1,7 @@
-import React, { useContext,useState } from "react";
+
+import React, { useContext,useState,useEffect } from "react";
 import  AppContext  from "../AppContext.js";
-import { likePost,unlikePost,deletePost } from "../api.js";
+import { likePost,unlikePost,deletePost ,addComment,getComments} from "../api.js";
 
 function timeAgo(ts) {
     const diff = Date.now() - ts;
@@ -10,17 +11,56 @@ function timeAgo(ts) {
     if (hours < 24) return `${hours}h`;
     return `${Math.floor(hours / 24)}d`;
 }
+function renderWithHashtags(text) {
+    return text.split(/(#[a-zA-Z0-9_]+)/g).map((part, idx) =>
+        /^#[a-zA-Z0-9_]+$/.test(part) ? (
+            <span key={idx} style={{
+                color: "#b266ff",
+                fontWeight: 600,
+                cursor: "pointer"
+            }}>{part}</span>
+        ) : part
+    );
+}
 
 export default function PostCard({ post }) {
     const {  user, posts, setPosts } = useContext(AppContext);
     const [notification, setNotification] = useState("");
+    const [comments, setComments] = useState([]);
+    const [commentText, setCommentText] = useState("");
+    const [loadingComments, setLoadingComments] = useState(true);
     const likedByUser= post.likedByCurrentUser;
+    const isOwner= post.ownedByCurrentUser;
+
+    const avatarSrc = post.avatar || "https://api.dicebear.com/7.x/thumbs/svg?seed=placeholder";
+    useEffect(() => {
+        setLoadingComments(true);
+        getComments(post.id)
+            .then(setComments)
+            .catch(() => setComments([]))
+            .finally(() => setLoadingComments(false));
+    }, [post.id]);
+
+    async function handleAddComment(e) {
+        e.preventDefault();
+        if (commentText.trim().length === 0) return;
+        try {
+            await addComment(post.id, user.username, commentText);
+            // After adding, reload comments from backend
+            const updated = await getComments(post.id);
+            setComments(updated);
+            setCommentText("");
+        } catch (e) {
+            setNotification("Failed to add comment: " + e.message);
+            setTimeout(() => setNotification(""), 2000);
+        }
+    }
+
     // Defensive checks!
     if (!user) {
         // Render nothing or a loading message until users/currentUserId is available
         return null;
     }//Commit
-
 
     async function handleLike() {
         // Can't like own post or like again
@@ -53,18 +93,19 @@ export default function PostCard({ post }) {
             setTimeout(() => setNotification(""), 2000);
         }
     }
+    
     return (
         <article className="post-card">
             <div className="post-header">
                 <img
                     className="avatar small"
-                    src={post.avatar || "https://api.dicebear.com/7.x/thumbs/svg?seed=placeholder"}
+                    src={avatarSrc}
                     alt={post.username || "user"}
                 />
                 <span className="post-username">{post.username}</span>
                 <span className="post-time">{timeAgo(post.timestamp)}</span>
             </div>
-            <div className="post-content">{post.text}</div>
+            <div className="post-content">{renderWithHashtags(post.text)}</div>
             <div className="post-footer">
         <span className="likes">
           {
@@ -86,8 +127,8 @@ export default function PostCard({ post }) {
                         💔
                     </button>
                 )}
-                {/* Delete button for your own post */}
-                {post.ownedByCurrentUser && (
+
+                {isOwner && (
                     <button
                         className="delete-btn"
                         onClick={handleDelete}
@@ -101,6 +142,34 @@ export default function PostCard({ post }) {
                 {post.username !== user.username && likedByUser && (
                     <span style={{marginLeft: 8, color: "#ffb6ba"}}>❤️</span>
                 )}
+            </div>
+            {/* Comments section */}
+            <div className="comments-section" style={{ marginTop: 12 }}>
+                <form onSubmit={handleAddComment} style={{ display: "flex", gap: 6 }}>
+                    <input
+                        type="text"
+                        placeholder="Write a comment…"
+                        value={commentText}
+                        onChange={e => setCommentText(e.target.value)}
+                        style={{
+                            flex: 1,
+                            borderRadius: 8,
+                            border: "1px solid #d2c4e8",
+                            padding: 8
+                        }}
+                    />
+                    <button type="submit" style={{ borderRadius: 8, padding: "8px 12px" }}>Comment</button>
+                </form>
+                <div className="comments-list" style={{ marginTop: 8 }}>
+                    {loadingComments
+                        ? <div style={{ color: "#aab8ff" }}>Loading comments…</div>
+                        : comments.map((c, i) => (
+                            <div key={i} style={{ fontSize: 14, color: "#b7cdfa", marginBottom: 2 }}>
+                                <b>{c.username}</b>: {c.text}
+                            </div>
+                        ))
+                    }
+                </div>
             </div>
         </article>
     );
