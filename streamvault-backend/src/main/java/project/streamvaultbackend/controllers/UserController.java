@@ -36,6 +36,7 @@ public class UserController {
         User currentUser = userService.findByUsername(username);
         userService.unfollow(currentUser, id);
     }
+    @Transactional
     @GetMapping("/{id}/followers")
     public List<UserDto> getFollowers(@PathVariable Long id) {
         User user = userService.findById(id);
@@ -44,7 +45,7 @@ public class UserController {
                         follower.getId(),
                         follower.getUsername(),
                         follower.getAvatar(),
-                        false // or: user.getFollowing().contains(follower)
+                        false
                 ))
                 .toList();
     }
