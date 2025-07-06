@@ -2,7 +2,7 @@ package project.streamvaultbackend.entities;
 
 import jakarta.persistence.*;
 
-//commit this changes
+
 import java.util.*;
 
 @Entity
@@ -16,7 +16,6 @@ public class User  {
 
     @Column(nullable = false)
     private String password;
-
     private String avatar;
 
     @ManyToMany
@@ -27,7 +26,7 @@ public class User  {
     )
     private Set<User> followers = new HashSet<>();
 
-    @ManyToMany(mappedBy = "followers")
+    @ManyToMany(mappedBy = "followers",fetch=FetchType.EAGER)
     private Set<User> following = new HashSet<>();
     public Long getId() {
 
