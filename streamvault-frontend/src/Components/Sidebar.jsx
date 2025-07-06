@@ -1,6 +1,6 @@
 import React, { useContext,useState,useEffect } from "react";
 import  AppContext  from "../AppContext.js";
-import { getFollowers } from "../api.js";
+import { getFollowers,getTimeline } from "../api.js";
 
 /**
  * Sidebar component displays user profile info and navigation links.
@@ -15,6 +15,7 @@ export default function Sidebar() {
         setSelectedUserId, // Setter to select which user's posts to view
         handleLogout, // Function to log the user out
         followersVersion,
+        setPosts
     } = useContext(AppContext);
     const[followers,setFollowers]=useState([]);
     const [loadingFollowers, setLoadingFollowers] = useState(false);
@@ -40,7 +41,7 @@ export default function Sidebar() {
             <div className="profile">
                 <img className="avatar small" src={user.avatar} alt={user.username} />
                 <div>
-                    <strong>{user.name}</strong>
+                    <strong>{user.username}</strong>
                     <span className="username">@{user.username}</span>
                     <br/>
                     <span style={{ fontSize: 13, color: "#888" }}>
@@ -52,19 +53,17 @@ export default function Sidebar() {
             </div>
             {/* Navigation links for Home, Profile, and New Post */}
             <ul>
-                <li onClick={() => { setFeedType('timeline'); setSelectedUserId(null); }}>
+                <li onClick={() => { setFeedType('timeline'); setSelectedUserId(null);
+                    getTimeline(user.username, 20).then(data => setPosts(data));}}>
                     <span>🏠</span> Home
                 </li>
                 <li onClick={() => { setFeedType('myposts'); setSelectedUserId(null); }}>
-                    <span>👤</span> Profile
-                </li>
-                <li onClick={() => { setFeedType('newpost'); setSelectedUserId(null); }}>
-                    <span>➕</span> New Post
+                    <span>👤</span> My Posts
                 </li>
             </ul>
             {/* Logout button */}
             <button className="logout-btn" onClick={handleLogout}>
-                Log out
+                Logout
             </button>
         </nav>
     );
