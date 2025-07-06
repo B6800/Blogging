@@ -4,7 +4,7 @@ import { searchUsers } from "../api.js";
 import UserListItem from "./UserListItem";
 
 export default function UserSearch() {
-    const { user,users,setUsers } = useContext(AppContext);
+    const { user,users,setUsers,setFeedType,setSelectedUserId } = useContext(AppContext);
     const [query, setQ] = useState("");
     const[loading,setLoading]=useState(false);
     // Defensive checks!
@@ -34,7 +34,7 @@ export default function UserSearch() {
             />
             <button type="submit" disabled={loading}>Search</button>
             <div className="user-search-results">
-                {users.map(u => <UserListItem key={u.id} user={u}  />)}
+                {users.map(u => <UserListItem key={u.id} user={u}  setFeedType={setFeedType} setSelectedUserId={setSelectedUserId} />)}
             </div>
         </form>
     );
