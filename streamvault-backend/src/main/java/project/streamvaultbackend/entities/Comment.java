@@ -2,14 +2,11 @@ package project.streamvaultbackend.entities;
 
 import jakarta.persistence.*;
 
-@SuppressWarnings("ALL")
+
 @Entity
 public class Comment {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(optional = false)
-    private Post post;
 
     @ManyToOne(optional = false)
     private User user;
@@ -23,11 +20,8 @@ public class Comment {
     public Long getId() {
         return id;
     }
-    public Post getPost() {
-        return post;
-    }
-    public void setPost(Post post) {
-        this.post = post;
+
+    public void setPost() {
     }
     public User getUser() {
         return user; }
