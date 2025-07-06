@@ -2,7 +2,7 @@ import React, { useContext,useState,useEffect } from "react";
 import  AppContext  from "../AppContext.js";
 import { followUser, unfollowUser,getFollowers } from "../api.js";
 //commit changes
-export default function UserListItem({ user }) {
+export default function UserListItem({ user,setFeedType,setSelectedUserId }) {
     const { user:currentUser, users, setUsers,setFollowersVersion} = useContext(AppContext);
     const isFollowing = user.followedByCurrentUser;
     const [followers, setFollowers] = useState([]);  // State to hold followers count/list
@@ -56,10 +56,20 @@ export default function UserListItem({ user }) {
             alert("Unfollow failed: " + e.message);
         }
     }
+    function handleViewPosts() {
+        setFeedType('user');
+        setSelectedUserId(user.id);
+    }
 //do a commit here
     return (
         <div>
+             <span
+                 style={{ cursor: "pointer", color: "#4466ff", fontWeight: 600, marginRight: 10 }}
+                 onClick={handleViewPosts}
+                 title="View posts"
+             >
             @{user.username}{" "}
+                  </span>
             <span>
                 Followers: {loadingFollowers ? "Loading..." : followers.length}
             </span>
