@@ -1,9 +1,7 @@
-//Mock API structure inspired by typical RESTful API design patterns for social platforms,
-// e.g. Twitter API and Instagram Graph API (see Twitter docs, Instagram docs)
-//User images are sourced from randomuser.me.
-//COMMIT THIS FILE
-const BASE = "http://localhost:8080/api";
+
+const BASE = import.meta.env.VITE_APP_STREAMVAULT_API;
 // Helper for Basic Auth header (username, password)
+
 
 // User Registration (no auth needed)
 export async function register(username, password) {
@@ -93,7 +91,22 @@ export async function deletePost(username, postId) {
     });
     if (!response.ok) throw new Error("Failed to delete post");
 }
+export async function addComment(postId, username, text) {
+    const response = await fetch(`${BASE}/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, text })
+    });
+    if (!response.ok) throw new Error("Failed to add comment");
+    return await response.json();
+}
 
+// Get comments for a post
+export async function getComments(postId) {
+    const response = await fetch(`${BASE}/posts/${postId}/comments`);
+    if (!response.ok) throw new Error("Failed to fetch comments");
+    return await response.json();
+}
 // Get User's Posts (auth required)
 export async function getUserPosts(username, password, userId,limit=20) {
     const response = await fetch(`${BASE}/posts/user/${userId}/posts?username=${encodeURIComponent(username)}&limit=${limit}`);
