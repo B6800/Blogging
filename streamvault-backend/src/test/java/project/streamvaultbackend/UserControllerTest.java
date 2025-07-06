@@ -1,4 +1,5 @@
 package project.streamvaultbackend;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import static org.junit.Assert.assertThrows;
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 public class UserControllerTest {
     @Autowired private UserController userController;
      @Autowired private AuthController authController;
@@ -39,6 +41,12 @@ public class UserControllerTest {
         assertEquals(1, result.size());
         assertEquals("dana", result.getFirst().username());
         assertFalse(result.getFirst().followedByCurrentUser());
+    }
+    @Test
+    public void cannotFollowYourself() {
+        // dana tries to follow herself
+        Exception ex = assertThrows(RuntimeException.class, () -> userController.follow(danaId, "dana"));
+        assertEquals("Cannot follow yourself", ex.getMessage());
     }
 
     @Test
@@ -80,7 +88,7 @@ public class UserControllerTest {
 
     @Test
     public void searchReturnsEmptyIfNoMatch() {
-        List<UserDto> result = userController.searchUsers("carl", "doesnotexist");
+        List<UserDto> result = userController.searchUsers("carl", "nonexistent");
         assertTrue(result.isEmpty());
     }
 
