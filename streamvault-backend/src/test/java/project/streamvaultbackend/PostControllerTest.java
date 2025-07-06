@@ -18,6 +18,7 @@ import static org.junit.Assert.assertThrows;
 @SpringBootTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
 public class PostControllerTest {
     @Autowired private PostRepository postRepository;
     @Autowired private AuthController authController;
@@ -64,7 +65,7 @@ public class PostControllerTest {
         // Alice creates one post
         postController.createPost(new PostController.CreatePostRequest("alice", "Alice's post"));
 
-        // Get bob's id using UserService
+        // Get Bob's id using UserService
         User bob = userService.findByUsername("bob");
         Long bobId = bob.getId();
 
@@ -74,7 +75,7 @@ public class PostControllerTest {
         assertTrue(bobPosts.stream().allMatch(p -> p.username().equals("bob")));
     }
 //Checks if the LikePost Count is incremented each time a post is liked
-    @Transactional
+
     @Test
     public void likePostIncrementsLikeCount() {
         // Alice creates a post
@@ -102,7 +103,7 @@ public class PostControllerTest {
     @Test
     public void likePostWithUnknownUserThrows() {
         PostDto post = postController.createPost(new PostController.CreatePostRequest("alice", "Like this!"));
-        assertThrows(Exception.class, () -> postController.likePost(post.id(), new PostController.LikePostRequest("nonexistentuser")));
+        assertThrows(Exception.class, () -> postController.likePost(post.id(), new PostController.LikePostRequest("nonexistent-user")));
     }
     @Test
     public void timelineShowsOnlyOwnPostsIfNoFollowing() {
@@ -131,6 +132,35 @@ public class PostControllerTest {
 
         // Alice tries to like her own post (should throw)
         assertThrows(RuntimeException.class, () -> postController.likePost(postId, new PostController.LikePostRequest("alice")));
+    }
+    @Transactional
+    @Test
+    public void unlikePostRemovesLike() {
+        // Alice creates a post
+        PostDto post = postController.createPost(new PostController.CreatePostRequest("alice", "Post for unlike test"));
+        Long postId = post.id();
+        // Bob follows Alice
+        userService.follow(userService.findByUsername("bob"), userService.findByUsername("alice").getId());
+
+        // Bob likes the post
+        postController.likePost(postId, new PostController.LikePostRequest("bob"));
+        // Bob unlikes the post (assume you implemented postController.unlikePost)
+        postController.unlikePost(postId, new PostController.LikePostRequest("bob"));
+
+        // Timeline for Bob: likeCount is 0, likedByCurrentUser is false
+        List<PostDto> timeline = postController.timeline(10, "bob");
+        assertEquals(1, timeline.size());
+        assertEquals(0, timeline.getFirst().likeCount());
+        assertFalse(timeline.getFirst().likedByCurrentUser());
+    }
+
+    @Test
+    public void cannotUnlikeIfNotLiked() {
+        // Alice creates a post
+        PostDto post = postController.createPost(new PostController.CreatePostRequest("alice", "Should not be able to unlike"));
+        Long postId = post.id();
+        // Bob tries to unlike without liking first (should throw)
+        assertThrows(RuntimeException.class, () -> postController.unlikePost(postId, new PostController.LikePostRequest("bob")));
     }
 
     @Test
@@ -163,5 +193,28 @@ public class PostControllerTest {
         // Use a bogus userId (e.g., 9999)
         assertThrows(Exception.class, () -> postController.userPosts("alice", 10, 9999L));
     }
+    @Test
+    public void deleteOwnPostRemovesFromTimeline() {
+        // Alice creates a post
+        PostDto post = postController.createPost(new PostController.CreatePostRequest("alice", "To be deleted"));
+        Long postId = post.id();
+        // Alice deletes her own post
+        postController.deletePost(postId, "alice");
+
+        // Timeline for Alice should be empty
+        List<PostDto> timeline = postController.timeline(10, "alice");
+        assertTrue(timeline.isEmpty(), "Timeline should be empty after deleting the only post");
+    }
+
+    @Test
+    public void cannotDeleteOthersPost() {
+        // Alice creates a post
+        PostDto post = postController.createPost(new PostController.CreatePostRequest("alice", "Can't be deleted by Bob"));
+        Long postId = post.id();
+
+        // Bob tries to delete Alice's post (should throw)
+        assertThrows(RuntimeException.class, () -> postController.deletePost(postId, "bob"));
+    }
+
 
 }
