@@ -3,6 +3,7 @@ package project.streamvaultbackend.entities;
 import jakarta.persistence.*;
 import java.util.*;
 
+
 @Entity
 public class Post {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,8 +16,12 @@ public class Post {
     private String text;
 
     private long timestamp;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
-@ManyToMany
+    @SuppressWarnings("unused")
+    public List<Comment> getComments() { return comments; }
+    @ManyToMany
     private Set<User> likes = new HashSet<>();
 
 
@@ -30,6 +35,7 @@ public class Post {
         return user;
     }
     public void setUser(User user) {
+
         this.user = user;
     }
 
@@ -48,11 +54,12 @@ public class Post {
     }
     public void setTimestamp(long timestamp) {
 
-        this.timestamp = timestamp;// Commit this change
+        this.timestamp = timestamp;
     }
 
     public Set<User> getLikes() {
 
         return likes;
     }
+
 }
