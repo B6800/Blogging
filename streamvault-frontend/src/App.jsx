@@ -1,4 +1,6 @@
 
+// noinspection JSUnusedGlobalSymbols
+
 import React, { useState,useEffect } from "react";
 import Sidebar from "./Components/Sidebar";
 import PostFeed from "./Components/PostFeed";
@@ -87,7 +89,7 @@ export default function App() {
         setUser, // To update user details if needed
         setUsers,
         followersVersion,
-        setFollowersVersion
+        setFollowersVersion,
     };
 
 
