@@ -10,6 +10,8 @@ public class Comment {
 
     @ManyToOne(optional = false)
     private User user;
+    @ManyToOne(optional = false)
+    private Post post;
 
     @Column(nullable = false, length = 280)
     private String text;
@@ -20,9 +22,14 @@ public class Comment {
     public Long getId() {
         return id;
     }
-
-    public void setPost() {
+    @SuppressWarnings("unused")
+    public Post getPost() {
+        return post;
     }
+    public void setPost(Post post) {
+        this.post=post;
+    }
+
     public User getUser() {
         return user; }
     public void setUser(User user) {
