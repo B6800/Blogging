@@ -37,6 +37,9 @@ public class UserService {
     }
 
 public void follow(User currentUser , Long targetId) {
+    if (currentUser.getId().equals(targetId)) {
+        throw new RuntimeException("Cannot follow yourself");
+    }
     User managedCurrentUser = UserRepository.findById(currentUser.getId())
             .orElseThrow(() -> new NoSuchElementException("User not found: " + currentUser.getId()));
     User target = UserRepository.findById(targetId)
