@@ -61,7 +61,7 @@ public class CommentControllerTest {
     @Test
     public void testAddCommentWithUnknownUserThrows() {
         var postDto = postController.createPost(new PostController.CreatePostRequest("alice", "Another post"));
-        var commentReq = new CommentController.AddCommentRequest("unknownuser", "Hello!");
+        var commentReq = new CommentController.AddCommentRequest("unknown-user", "Hello!");
         assertThrows(Exception.class, () -> commentController.addComment(postDto.id(), commentReq));
     }
 
