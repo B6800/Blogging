@@ -17,13 +17,13 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("api/auth/register")
+    @PostMapping("/api/auth/register")
     public UserDto register(@RequestBody AuthRequest req) {
         User user = authService.register(req.username(), req.password());
         return new UserDto(user.getId(), user.getUsername(), user.getAvatar(), false);
     }
 
-    @PostMapping("api/auth/login")
+    @PostMapping("/api/auth/login")
     public UserDto login(@RequestBody AuthRequest req) {
         User user = authService.login(req.username(), req.password());
         return new UserDto(user.getId(), user.getUsername(), user.getAvatar(), false);
