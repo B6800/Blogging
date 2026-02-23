@@ -19,7 +19,7 @@ services:
       - "7070:8080"
     depends_on:
       db:
-           condition: service_healthy
+        condition: service_healthy
   backend:
     image: streamvault/backend
     restart: always
@@ -28,8 +28,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-     db:
-           condition: service_healthy
+      db:
+        condition: service_healthy
 
   frontend:
     image: streamvault/frontend
@@ -41,4 +41,4 @@ services:
     ports:
       - "80:80"
     depends_on:
-       - backend
+      - backend
