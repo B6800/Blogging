@@ -31,7 +31,7 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-backend .
 
       - name: Push Backend Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-backend
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-backend v2
 
 
   # ----------------- Frontend / Nginx -----------------
@@ -56,7 +56,7 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-nginx .
 
       - name: Push Nginx Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-nginx
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-nginx v2
 
 
 
