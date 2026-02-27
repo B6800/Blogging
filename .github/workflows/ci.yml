@@ -33,21 +33,55 @@ jobs:
       - name: Push Backend Docker Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-backend
 
-      # ----------------- Frontend -----------------
+
+  # ----------------- Frontend / Nginx -----------------
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: streamvault-frontend/package-lock.json
+         node-version: '18'
+         cache: 'npm'
+         cache-dependency-path: streamvault-frontend/package-lock.json
 
       - name: Install Frontend Dependencies
         working-directory: streamvault-frontend
         run: npm install
 
-      - name: Build Frontend Docker Image
-        working-directory: streamvault-frontend
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-frontend .
 
-      - name: Push Frontend Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-frontend
+      - name: Build React App
+        working-directory: streamvault-frontend
+        run: npm run build
+
+      - name: Build Nginx Docker Image
+        working-directory: streamvault-frontend  # or wherever your Dockerfile is
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-nginx .
+
+      - name: Push Nginx Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-nginx
+
+
+
+
+
+
+
+
+
+
+      # ----------------- Frontend -----------------
+      #- name: Set up Node.js
+       # uses: actions/setup-node@v3
+        #with:
+         # node-version: '18'
+         # cache: 'npm'
+         # cache-dependency-path: streamvault-frontend/package-lock.json
+
+      #- name: Install Frontend Dependencies
+       # working-directory: streamvault-frontend
+       # run: npm install
+
+      #- name: Build Frontend Docker Image
+       # working-directory: streamvault-frontend
+      #  run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-frontend .
+
+     # - name: Push Frontend Docker Image
+      #  run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-frontend
