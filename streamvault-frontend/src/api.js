@@ -1,8 +1,8 @@
 
-const BASE = import.meta.env.VITE_APP_STREAMVAULT_API;
+
 // Helper for Basic Auth header (username, password)
 
-
+const BASE ="https://blog.bakwowi.dev/api;"
 // User Registration (no auth needed)
 export async function register(username, password) {
     const response = await fetch(`${BASE}/auth/register`, {
