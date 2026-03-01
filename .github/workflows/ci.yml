@@ -28,10 +28,10 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
       - name: Build Backend Docker Image
         working-directory: streamvault-backend
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-backend:v5 .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-backend:v6 .
 
       - name: Push Backend Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-backend:v5
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-backend:v6
 
 
   # ----------------- Frontend / Nginx -----------------
@@ -46,6 +46,10 @@ jobs:
         working-directory: streamvault-frontend
         run: npm install
 
+      - name: Create production env file
+        run: |
+           echo "VITE_APP_STREAMVAULT_API=https://blog.bakwowi.dev/api" >> streamvault-frontend/.env.production
+
 
       - name: Build React App
         working-directory: streamvault-frontend
@@ -53,10 +57,10 @@ jobs:
 
       - name: Build Nginx Docker Image
         working-directory: streamvault-frontend  # or wherever your Dockerfile is
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-nginx:v5 .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/blogging-nginx:v6 .
 
       - name: Push Nginx Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-nginx:v5
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/blogging-nginx:v6
 
 
 
