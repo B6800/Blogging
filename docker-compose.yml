@@ -3,14 +3,14 @@ services:
     image: mariadb
     restart: always
     environment:
-      MARIADB_ROOT_PASSWORD: asdf1234
-      MARIADB_DATABASE: streamvaultapp
+      MARIADB_ROOT_PASSWORD:  ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE:  ${DB_NAME}
     volumes:
       - ./db-data:/var/lib/mysql
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "--password=asdf1234"]
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "--password=${DB_ROOT_PASSWORD}"]
 
   adminer:
     image: adminer
