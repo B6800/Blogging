@@ -7,29 +7,19 @@ Architecture
 # **Explanation**
 
 * Nginx serves the frontend static files (HTML, CSS, JavaScript).
-* 
 * Requests to /api are forwarded by Nginx to the backend container.
-* 
 * The Spring Boot backend handles business logic and communicates with MariaDB.
-* 
 * All services run inside Docker containers on an AWS EC2 instance.
 
 # **Tech Stack**
 
 * **Backend:** Spring Boot (Java 21)
-* 
 * **Frontend:** React (served by Nginx)
-* 
 * **Database:** MariaDB
-* 
 * **Containerization:** Docker & Docker Hub
-* 
 * **CI/CD:** GitHub Actions
-* 
 * **Cloud Hosting:** AWS EC2 (Ubuntu)
-* 
 * **Reverse Proxy & Web Server:** Nginx
-* 
 * **Security:** Let’s Encrypt (HTTPS)
 
 # **CI/CD Flow**
@@ -98,25 +88,17 @@ This hides internal ports and exposes a single public entry point.
 5. **HTTPS Configuration**
 
 * Install Certbot:
-* 
 * sudo apt install certbot python3-certbot-nginx -y
-* 
 * Generate SSL certificate:
-* 
 * sudo certbot --nginx -d your-domain.com
-* 
 * HTTPS certificates renew automatically.
 
 # **Key Decisions**
 
 * Used Docker Compose to orchestrate backend and database containers.
-* 
 * Served frontend directly through Nginx for simpler production deployment.
-* 
 * Implemented reverse proxy routing to separate UI and API traffic.
-* 
 * Automated builds and deployments using GitHub Actions.
-* 
 * Enabled HTTPS using Let’s Encrypt for secure communication.
 
 
