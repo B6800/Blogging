@@ -1,56 +1,133 @@
-# ics-wtp-streamvault
-📈 Extra Features
-This project implements four extra features, as allowed by the course requirements, to improve the base grade.
+# Microblogging Platform – DevOps Deployment
 
-1. Un-liking Posts
-   Users can remove their like from any post they have previously liked.
+Architecture
 
-Backend:
+![architecture.png](architecture.png)
 
-Dedicated endpoint: POST /api/posts/{postId}/unlike
+# **Explanation**
 
-Only the user who previously liked the post can unlike it.
+* Nginx serves the frontend static files (HTML, CSS, JavaScript).
+* 
+* Requests to /api are forwarded by Nginx to the backend container.
+* 
+* The Spring Boot backend handles business logic and communicates with MariaDB.
+* 
+* All services run inside Docker containers on an AWS EC2 instance.
 
-Frontend:
+# **Tech Stack**
 
-The UI allows users to toggle likes and unlikes for each post.
+* **Backend:** Spring Boot (Java 21)
+* 
+* **Frontend:** React (served by Nginx)
+* 
+* **Database:** MariaDB
+* 
+* **Containerization:** Docker & Docker Hub
+* 
+* **CI/CD:** GitHub Actions
+* 
+* **Cloud Hosting:** AWS EC2 (Ubuntu)
+* 
+* **Reverse Proxy & Web Server:** Nginx
+* 
+* **Security:** Let’s Encrypt (HTTPS)
 
-2. Commenting on Posts
-   Users can add comments to posts and view all comments for a given post.
+# **CI/CD Flow**
 
-Backend:
+The deployment pipeline runs automatically on every push to the main branch.
 
-Endpoints:
+## Pipeline Steps
 
-POST /api/posts/{postId}/comments — Add a comment
+1. Code pushed to GitHub
+2. GitHub Actions workflow starts
+3. Maven builds and tests backend
+4. Docker image is built
+5. Image pushed to Docker Hub
+6. EC2 server pulls latest image
+7. Containers restart automatically
 
-GET /api/posts/{postId}/comments — Retrieve comments
+**Push → Build → Test → Docker Build → Push → Deploy on EC2**
 
-Frontend:
+#  **Application Deployment**
 
-Each post displays its comments and provides a form to add new comments.
+The application is deployed using prebuilt Docker images hosted on Docker Hub.
 
-3. Deleting One’s Own Posts
-   Users can delete posts they have created.
+1. **Connect to EC2**
+   ssh ubuntu@<EC2-PUBLIC-IP>
+2. Pull Docker images
+   docker pull Backend_Image_Name:latest
+   docker pull Nginx_Image_Name:latest
+   docker pull mariadb:11
 
-Backend:
+3. **Create Docker network**
+   docker network create Network_Name
+4. **Start database container**
+   docker run -d \
+   --name mariadb \
+   --network Network_Name \
+   -e MARIADB_ROOT_PASSWORD=DB_ROOT_PASSWORD\
+   -e MARIADB_DATABASE=DB_NAME\
+   -e MARIADB_USER=DB_USER \
+   -e MARIADB_PASSWORD=DB_PASSWORD \
+   mariadb:11
 
-Endpoint: DELETE /api/posts/{postId}?username=...
+5. **Start Spring Boot backend**
+   docker run -d \
+   --name Backend_Container_Name \
+   --network Network_Name \
+   -e SPRING_DATASOURCE_URL=jdbc:mariadb://mariadb:3306/DB_NAME \
+   -e SPRING_DATASOURCE_USERNAME=DB_USER \
+   -e SPRING_DATASOURCE_PASSWORD=DB_PASSWORD \
+   brb46896/blogging-app:latest
+6. **Start Nginx reverse proxy**
+   docker run -d \
+   --name Nginx_Container_Name \
+   --network Network_Name \
+   -p 80:80 -p 443:443 \
+   Backend_Image_Name:latest
 
-Only the owner of a post is permitted to delete it; unauthorized deletion is prevented.
+4. **Nginx Reverse Proxy**
 
-Frontend:
+Nginx handles incoming traffic:
 
-A delete button is available next to each post created by the logged-in user.
+/        → Frontend static files
+/api     → Spring Boot backend container
 
-4. Tagging Posts Using a Hashtag Mechanism (Frontend Only)
-   Users can add hashtags to their posts by including #hashtag patterns in the post text.
+This hides internal ports and exposes a single public entry point.
 
-Frontend:
+5. **HTTPS Configuration**
 
-Hashtags are automatically detected in post content and styled as faint (or as links).
+* Install Certbot:
+* 
+* sudo apt install certbot python3-certbot-nginx -y
+* 
+* Generate SSL certificate:
+* 
+* sudo certbot --nginx -d your-domain.com
+* 
+* HTTPS certificates renew automatically.
 
-Backend:
+# **Key Decisions**
 
-No special backend implementation; hashtags are handled entirely in the frontend.
+* Used Docker Compose to orchestrate backend and database containers.
+* 
+* Served frontend directly through Nginx for simpler production deployment.
+* 
+* Implemented reverse proxy routing to separate UI and API traffic.
+* 
+* Automated builds and deployments using GitHub Actions.
+* 
+* Enabled HTTPS using Let’s Encrypt for secure communication.
+
+
+# **What This Project Demonstrates**
+
+This project showcases practical experience with:
+
+* Containerized deployments
+* CI/CD automation
+* Cloud infrastructure (AWS EC2)
+* Reverse proxy configuration
+* HTTPS/SSL setup
+
 
